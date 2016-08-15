@@ -9,3 +9,7 @@ maps
 mapproj
 hexbin
 RColorBrewer
+lattice
+mosaicData
+Matrix
+mosaic

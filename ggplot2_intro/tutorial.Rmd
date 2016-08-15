@@ -1,14 +1,14 @@
 ---
 title: "ggplot2 tutorial"
 author: "Amelia McNamara"
-date: "April 22, 2015"
+date: "August 15, 2016"
 output: ioslides_presentation
 ---
 
 ## ggplot2
 ggplot2 is an R package by Hadley Wickham that lets you make beautiful R graphics (relatively) easily. 
 
-It's part of the Hadleyverse, which I recommend everyone get to know (dplyr, reshape2, stringr, lubridate... and many more).
+It's part of the tidyverse, which I recommend everyone get to know (dplyr, stringr, lubridate, broom... and many more).
 
 The name ggplot2 refers to a famous book on data visualization theory called The Grammar of Graphics.
 
@@ -144,9 +144,12 @@ library(dplyr)
 ```{r}
 econ <- economics
 str(econ)
-econ$date <- ymd(econ$date)
-old <- filter(econ, year(date)<"1970")
-old$date <- ymd(old$date)
+econ <- econ %>%
+  mutate(date = ymd(date)) 
+old <- econ %>%
+  filter(year(date)<"1970")
+old <- old %>%
+  mutate(date = ymd(date))
 ```
 
 ##
@@ -185,11 +188,12 @@ library(ggmap)
 ## 
 ```{r}
 str(crime) # crime data from ggmap package
+library(mosaic)
 ```
 
 ## 
 ```{r}
-midlat <- mean(crime$lat, na.rm=TRUE)
+midlat <- mean(~lat, data=crime, na.rm=TRUE)
 midlon <- mean(crime$lon, na.rm=TRUE)
 m1 <- get_map(source='stamen', location=c(midlon, midlat), 
               maptype="watercolor", zoom=11)
