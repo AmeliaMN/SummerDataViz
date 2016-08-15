@@ -1,9 +1,16 @@
 ---
 title: "ggplot2 tutorial"
-author: "Amelia McNamara"e
+author: "Amelia McNamara"
 date: "August 15, 2016"
 output: slidy_presentation
 ---
+
+## R graphics
+There are many ways to make graphics in R.
+
+- base R
+- lattice graphics
+- ggplot2 
 
 ## ggplot2
 ggplot2 is an R package by Hadley Wickham that lets you make beautiful R graphics (relatively) easily. 
@@ -28,6 +35,18 @@ library(ggplot2)
 To start, I'm going to use the diamonds data that comes with ggplot2,
 ```{r}
 str(diamonds)
+```
+
+## ATUS data
+
+You guys are going to get to follow along with the diamonds data, but also try things out on the American Time Use Survey data. 
+
+I've given you this data [here](https://github.com/AmeliaMN/SummerDataViz/blob/master/ggplot2_intro/atus.csv). You can download this the point-and-click way, or do it programmatically. 
+
+```{r}
+library(RCurl)
+htmlData <- getURL("https://github.com/AmeliaMN/SummerDataViz/blob/master/ggplot2_intro/atus.csv")
+atus <- read.csv(text = htmlData)
 ```
 
 ## qplot()-- the easy way out
@@ -272,6 +291,18 @@ p4 <- p4 +
 ```{r, eval=FALSE}
 ggsave("beautiful_hex_map.jpg", plot=p4)
 ```
+
+## Challenge questions
+
+- Make a stacked bar chart of `atus` data, but change the color scheme.
+
+- Make a scatterplot of `atus` data, but remove the grey-and-white background.
+
+- Make a plot that helps you determine which state has the most veterans. 
+
+- Are most veterans married or not?
+
+
 
 ## Resources for ggplot2
 

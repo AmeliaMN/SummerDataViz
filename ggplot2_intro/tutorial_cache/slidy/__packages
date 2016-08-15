@@ -11,3 +11,5 @@ Matrix
 mosaic
 hexbin
 RColorBrewer
+bitops
+RCurl
