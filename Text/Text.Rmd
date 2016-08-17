@@ -117,11 +117,11 @@ What about the most popular by decade?
 decadelyrics <- lyricwords %>%
   mutate(decade = (Year %/% 10) * 10)
 wordcounts <- decadelyrics %>%
-  group_by(word, decade) %>%
+  group_by(word, Year) %>%
   summarize(uses = n()) 
 
-wordcounts %>%
-  group_by(decade) %>%
+popular <- wordcounts %>%
+  group_by(Year) %>%
   slice(which.max(uses))
 
 wordcounts %>%
@@ -138,7 +138,7 @@ nrc <- sentiments %>%
 
 ```{r}
 years <- lyricwords %>%
-  group_by(Year, Song) %>%
+  group_by(Year, Song, word) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
   distinct(Year, word, total_words)
@@ -147,12 +147,13 @@ years <- lyricwords %>%
 ```{r}
 by_source_sentiment <- years %>%
   inner_join(nrc, by = "word") %>%
-  count(sentiment, Year)  %>%
+  group_by(Year, sentiment) %>%
+  summarize(total = sum(total_words)) %>%
   group_by(Year) %>%
-  slice(which.max(n))
+  slice(which.max(total))
 
 by_source_sentiment %>%
-  arrange(desc(n)) 
+  arrange(desc(total)) 
 
 by_source_sentiment <- by_source_sentiment %>%
   mutate(binom = if_else(sentiment =="positive",1,0))
