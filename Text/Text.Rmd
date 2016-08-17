@@ -41,6 +41,7 @@ library(RCurl)
 library(readr)
 webData <- getURL("https://raw.githubusercontent.com/walkerkq/musiclyrics/master/billboard_lyrics_1964-2015.csv")
 lyrics <- read_csv(webData)
+dim(lyrics)
 ```
 
 ## string manipulations
@@ -50,6 +51,7 @@ library(dplyr)
 library(stringr)
 beatles <- lyrics %>%
   filter(str_detect(Artist, "beatles"))
+dim(beatles)
 ```
 
 ## Now you -- find all the songs containing "love"
@@ -62,6 +64,7 @@ beatles <- lyrics %>%
 ```{r}
 love <- lyrics %>%
   filter(str_detect(Lyrics, "lov"))
+dim(love)
 ```
 
 
@@ -78,6 +81,8 @@ library(tidytext)
 lyricwords <- lyrics %>%
   unnest_tokens(word, Lyrics, token = "words") %>%
   filter(!word %in% stop_words$word,str_detect(word, "[a-z]"))
+lyricwords %>%
+  select(Song, Artist, word)
 ```
 
 
@@ -87,9 +92,11 @@ library(ggplot2)
 wordcounts <- lyricwords %>%
   group_by(word) %>%
   summarize(uses = n())
-wordcounts %>%
+wordcounts <- wordcounts %>%
   arrange(desc(uses)) %>%
-  slice(1:20) %>%
+  slice(1:20) 
+
+wordcounts %>%
   ggplot() + geom_bar(aes(x=reorder(word, uses), y=uses),stat = "identity")
 
 #  ggplot() + geom_bar(aes(x=word, y=uses),stat = "identity")
@@ -99,6 +106,7 @@ wordcounts %>%
 
 ```{r}
 data(stop_words)
+head(stop_words)
 ```
 
 ## We can make our own list of the stop words
@@ -117,11 +125,11 @@ What about the most popular by decade?
 decadelyrics <- lyricwords %>%
   mutate(decade = (Year %/% 10) * 10)
 wordcounts <- decadelyrics %>%
-  group_by(word, Year) %>%
+  group_by(word, decade) %>%
   summarize(uses = n()) 
 
 popular <- wordcounts %>%
-  group_by(Year) %>%
+  group_by(decade) %>%
   slice(which.max(uses))
 
 wordcounts %>%
@@ -166,7 +174,7 @@ p1
 # p2
 ```
 
-# Are songs getting longer or shorter?
+## Are songs getting longer or shorter?
 
 ## One approach
 
@@ -199,6 +207,7 @@ repetitive <- lyricwords %>%
   group_by(Artist, Song, word) %>%
   summarize(n=n()) %>%
   arrange(desc(n)) 
+repetitive %>% select(word, n, Song, Artist)
 ```
 
 ## Vocabulary size
@@ -208,8 +217,9 @@ uniques <- lyricwords %>%
   filter(!str_detect(Artist, "featuring")) %>%
   filter(word != "instrumental") %>%
   group_by(Song, Artist) %>%
-  summarize(n = length(unique(word))/length(word)) %>%
+  summarize(n = length(unique(word))) %>%
   arrange(desc(n))
+uniques
 ```
 
 ## Try it with project Gutenberg data
