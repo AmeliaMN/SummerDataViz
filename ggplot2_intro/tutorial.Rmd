@@ -45,7 +45,7 @@ I've given you this data [here](https://github.com/AmeliaMN/SummerDataViz/blob/m
 
 ```{r}
 library(RCurl)
-htmlData <- getURL("https://github.com/AmeliaMN/SummerDataViz/blob/master/ggplot2_intro/atus.csv")
+htmlData <- getURL("https://raw.githubusercontent.com/AmeliaMN/SummerDataViz/master/ggplot2_intro/atus.csv")
 atus <- read.csv(text = htmlData)
 ```
 
@@ -186,7 +186,7 @@ library(scales)
 ##
 ```{r}
 p3 + 
-  scale_x_date(breaks = date_breaks("6 months"), 
+  scale_x_date(breaks = date_breaks("3 months"), 
                    labels = date_format("%b %Y"))
 ```
 
