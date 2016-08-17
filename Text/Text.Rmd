@@ -6,7 +6,7 @@ output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message=FALSE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE)
 ```
 
 ## Overview so far
@@ -27,7 +27,11 @@ We'll go through some of Scott, Karthik, and Garrett's [useR tutorial](https://g
 
 ## Scraping!
 
-## Some text
+We're switching over to the useR tutorial by Scott, Karthik, and Garrett. 
+
+See it here: [useR tutorial](https://github.com/AmeliaMN/user2016-tutorial/).
+
+# Some text
 
 (I got the URL right this time-- notice it starts with `raw`.)
 
@@ -75,7 +79,10 @@ lyricwords <- lyrics %>%
   filter(!word %in% stop_words$word,str_detect(word, "[a-z]"))
 ```
 
+
+## Common words
 ```{r}
+library(ggplot2)
 wordcounts <- lyricwords %>%
   group_by(word) %>%
   summarize(uses = n())
@@ -128,7 +135,8 @@ nrc <- sentiments %>%
   dplyr::select(word, sentiment)
 ```
 
-```{r}
+```{r, eval=FALSE}
+# In progress
 years <- lyricwords %>%
   group_by(Year) %>%
   mutate(total_words = n()) %>%
@@ -136,4 +144,26 @@ years <- lyricwords %>%
   distinct(id, source, total_words)
 ```
 
-## Challenge question-- are songs getting longer or shorter?
+# Are songs getting longer or shorter?
+
+## One approach
+
+```{r}
+lyrics <- lyrics %>%
+  mutate(lyrchar = str_length(Lyrics))
+
+lettery <- lyrics %>%
+  group_by(Year) %>%
+  summarize(songlength = mean(lyrchar, na.rm=TRUE))
+ggplot(lettery) + geom_line(aes(x=Year, y=songlength)) + ylab("Number of letters in lyrics")
+```
+## Another approach 
+```{r}
+wordy <- lyrics %>%
+  unnest_tokens(word, Lyrics, token = "words") %>%
+  group_by(Song, Year) %>%
+  summarize(length=n()) %>%
+  group_by(Year) %>%
+  summarize(songlength = mean(length, na.rm=TRUE))
+ggplot(wordy) + geom_line(aes(x=Year, y=songlength)) + ylab("Number of words in lyrics")
+```
