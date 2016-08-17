@@ -113,9 +113,9 @@ What about the most popular by decade?
 
 ## One approach
 ```{r}
-lyricwords <- lyricwords %>%
+decadelyrics <- lyricwords %>%
   mutate(decade = (Year %/% 10) * 10)
-wordcounts <- lyricwords %>%
+wordcounts <- decadelyrics %>%
   group_by(word, decade) %>%
   summarize(uses = n()) 
 
@@ -135,13 +135,32 @@ nrc <- sentiments %>%
   dplyr::select(word, sentiment)
 ```
 
-```{r, eval=FALSE}
-# In progress
+```{r}
 years <- lyricwords %>%
-  group_by(Year) %>%
+  group_by(Year, Song) %>%
   mutate(total_words = n()) %>%
   ungroup() %>%
-  distinct(id, source, total_words)
+  distinct(Year, word, total_words)
+```
+
+```{r}
+by_source_sentiment <- years %>%
+  inner_join(nrc, by = "word") %>%
+  count(sentiment, Year)  %>%
+  group_by(Year) %>%
+  slice(which.max(n))
+
+by_source_sentiment %>%
+  arrange(desc(n)) 
+
+by_source_sentiment <- by_source_sentiment %>%
+  mutate(binom = if_else(sentiment =="positive",1,0))
+
+p1 <- ggplot(by_source_sentiment, aes(x=Year, y=sentiment)) + geom_point() 
+p1 
+
+p2 <- ggplot(by_source_sentiment, aes(x=Year, y=binom)) + geom_point() + geom_smooth(aes(y=binom), method="glm", method.args = list(family = "binomial"), se=FALSE, fullrange=TRUE)+xlim(1960, 2040)
+p2
 ```
 
 # Are songs getting longer or shorter?
