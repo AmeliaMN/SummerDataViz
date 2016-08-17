@@ -155,14 +155,15 @@ by_source_sentiment <- years %>%
 by_source_sentiment %>%
   arrange(desc(total)) 
 
-by_source_sentiment <- by_source_sentiment %>%
-  mutate(binom = if_else(sentiment =="positive",1,0))
+# Doesn't make sense anymore
+# by_source_sentiment <- by_source_sentiment %>%
+#   mutate(binom = if_else(sentiment =="positive",1,0))
 
 p1 <- ggplot(by_source_sentiment, aes(x=Year, y=sentiment)) + geom_point() 
 p1 
 
-p2 <- ggplot(by_source_sentiment, aes(x=Year, y=binom)) + geom_point() + geom_smooth(aes(y=binom), method="glm", method.args = list(family = "binomial"), se=FALSE, fullrange=TRUE)+xlim(1960, 2040)
-p2
+# p2 <- ggplot(by_source_sentiment, aes(x=Year, y=binom)) + geom_point() + geom_smooth(aes(y=binom), method="glm", method.args = list(family = "binomial"), se=FALSE, fullrange=TRUE)+xlim(1960, 2040)
+# p2
 ```
 
 # Are songs getting longer or shorter?
@@ -189,6 +190,26 @@ wordy <- lyrics %>%
   group_by(Year) %>%
   summarize(songlength = mean(length, na.rm=TRUE))
 ggplot(wordy) + geom_line(aes(x=Year, y=songlength)) + ylab("Number of words in lyrics")
+```
+
+## Repetitive words
+
+```{r}
+repetitive <- lyricwords %>%
+  group_by(Artist, Song, word) %>%
+  summarize(n=n()) %>%
+  arrange(desc(n)) 
+```
+
+## Vocabulary size
+
+```{r}
+uniques <- lyricwords %>%
+  filter(!str_detect(Artist, "featuring")) %>%
+  filter(word != "instrumental") %>%
+  group_by(Song, Artist) %>%
+  summarize(n = length(unique(word))/length(word)) %>%
+  arrange(desc(n))
 ```
 
 ## Try it with project Gutenberg data
