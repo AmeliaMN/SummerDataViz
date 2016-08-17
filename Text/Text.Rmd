@@ -6,7 +6,7 @@ output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE, warning=FALSE)
 ```
 
 ## Overview so far
@@ -33,6 +33,7 @@ See it here: [useR tutorial](https://github.com/AmeliaMN/user2016-tutorial/).
 
 # Some text
 
+## Loading data
 (I got the URL right this time-- notice it starts with `raw`.)
 
 ```{r}
@@ -176,7 +177,9 @@ lettery <- lyrics %>%
   summarize(songlength = mean(lyrchar, na.rm=TRUE))
 ggplot(lettery) + geom_line(aes(x=Year, y=songlength)) + ylab("Number of letters in lyrics")
 ```
+
 ## Another approach 
+
 ```{r}
 wordy <- lyrics %>%
   unnest_tokens(word, Lyrics, token = "words") %>%
