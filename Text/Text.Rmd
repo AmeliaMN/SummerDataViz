@@ -186,3 +186,19 @@ wordy <- lyrics %>%
   summarize(songlength = mean(length, na.rm=TRUE))
 ggplot(wordy) + geom_line(aes(x=Year, y=songlength)) + ylab("Number of words in lyrics")
 ```
+
+## Try it with project Gutenberg data
+Jordan gave us already-counted words from Project Gutenberg books! 
+
+Either: go to a url, like [http://www.science.smith.edu/~jcrouser/data/burton-arabian-363.txt](http://www.science.smith.edu/~jcrouser/data/burton-arabian-363.txt) and change the `.txt` to `.csv` to download data. 
+
+```{r}
+arabian <- read_csv("burton-arabian-363.csv")
+```
+
+Or
+
+```{r}
+webData <- getURL("http://www.science.smith.edu/~jcrouser/data/alice.csv")
+alice <- read_csv(webData)
+```
