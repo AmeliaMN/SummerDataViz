@@ -6,7 +6,7 @@ output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE)
 ```
 
 ## Overview so far
@@ -33,6 +33,107 @@ We'll go through some of Scott, Karthik, and Garrett's [useR tutorial](https://g
 
 ```{r}
 library(RCurl)
-htmlData <- getURL("https://raw.githubusercontent.com/walkerkq/musiclyrics/master/billboard_lyrics_1964-2015.csv")
-atus <- read.csv(text = htmlData)
+library(readr)
+webData <- getURL("https://raw.githubusercontent.com/walkerkq/musiclyrics/master/billboard_lyrics_1964-2015.csv")
+lyrics <- read_csv(webData)
 ```
+
+## string manipulations
+
+```{r}
+library(dplyr)
+library(stringr)
+beatles <- lyrics %>%
+  filter(str_detect(Artist, "beatles"))
+```
+
+## Now you -- find all the songs containing "love"
+
+(How much smaller do you think `love` is than `lyrics`? How much smaller is it really?)
+
+
+## One approach
+
+```{r}
+love <- lyrics %>%
+  filter(str_detect(Lyrics, "lov"))
+```
+
+
+
+## Trump tweets
+
+David Robinson wrote this great [blog post](http://varianceexplained.org/r/trump-tweets/) about Trump's tweets. It's also a great walkthrough of some text analysis! We're going to try it on our own data. 
+
+
+## Words
+
+```{r}
+library(tidytext)
+lyricwords <- lyrics %>%
+  unnest_tokens(word, Lyrics, token = "words") %>%
+  filter(!word %in% stop_words$word,str_detect(word, "[a-z]"))
+```
+
+```{r}
+wordcounts <- lyricwords %>%
+  group_by(word) %>%
+  summarize(uses = n())
+wordcounts %>%
+  arrange(desc(uses)) %>%
+  slice(1:20) %>%
+  ggplot() + geom_bar(aes(x=reorder(word, uses), y=uses),stat = "identity")
+
+#  ggplot() + geom_bar(aes(x=word, y=uses),stat = "identity")
+```
+
+## Stop words
+
+```{r}
+data(stop_words)
+```
+
+## We can make our own list of the stop words
+
+```{r}
+morewords <- data.frame(word = c("im", "aint", "dont"), lexicon = "MM")
+lyricwords <- lyricwords %>%
+  filter(!word %in% morewords$word)
+```
+
+## Now you do it-- what were the most popular words per year?
+What about the most popular by decade? 
+
+## One approach
+```{r}
+lyricwords <- lyricwords %>%
+  mutate(decade = (Year %/% 10) * 10)
+wordcounts <- lyricwords %>%
+  group_by(word, decade) %>%
+  summarize(uses = n()) 
+
+wordcounts %>%
+  group_by(decade) %>%
+  slice(which.max(uses))
+
+wordcounts %>%
+  arrange(decade, desc(uses)) 
+```
+
+
+## Sentiment analysis
+```{r}
+nrc <- sentiments %>%
+  filter(lexicon == "nrc") %>%
+  dplyr::select(word, sentiment)
+```
+
+```{r}
+years <- lyricwords %>%
+  group_by(Year) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  distinct(id, source, total_words)
+```
+
+## Challenge question-- are songs getting longer or shorter?
