@@ -6,7 +6,7 @@ output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, cache=TRUE, warning=FALSE)
 ```
 
 ## Types of geographic data
@@ -21,14 +21,18 @@ People often also talk about images as geographic data, because so many maps com
 - vector data (lines and polygons), and
 - raster data (images)
 
-## Tiles
 
+## Tiles
 Mapbox has a [nice explanation](https://www.mapbox.com/help/how-web-maps-work/) of how map tiles work. Let's check it out! 
 
-# Points
+## Leaflet
+Leaflet is a JavaScript mapping library.
+
+This means it plays nicer with things like d3, but we can use it in R as well, through an `htmlwidget`.
+
+## Points
 
 ## Making a map with points in R with leaflet
-
 We're going to be doing a lot of the stuff from the RStudio [leaflet tutorial](https://rstudio.github.io/leaflet/).
 
 ```{r}
@@ -69,14 +73,20 @@ m
 ## Find another storm type to map
 Bonus-- add popups!
 
+## Plotting lots of points
 
-# Lines
+I love the [Racial Dot Map](http://www.coopercenter.org/demographics/Racial-Dot-Map). Let's go check it out!
+
+![](img/racialdotmap.png)
+
+
+## Lines
 
 ## I don't have much to say here
 - Streets?
 - ??
 
-# Polygons
+## Polygons
 
 ## Lets start with something easy(ish) -- circles
 
@@ -92,10 +102,25 @@ m <- leaflet(data=tornados) %>%
 m
 ```
 
-## But usually, you want polygons
+## But usually, you want boundaries
+Most of the time, you need to aggregate your data in some way. Think about states, countries, zipcodes, counties, etc. Data often comes pre-aggregated at a particular spatial aggregation, or you can't show all the individual points. 
+
+## Old-school choropleth map
+
+![](img/1895.png)
+
+## More modern choropleth
+
+[The best and worst places to grow up: How your area compares ](http://www.nytimes.com/interactive/2015/05/03/upshot/the-best-and-worst-places-to-grow-up-how-your-area-compares.html?_r=0)
+
+![](img/choropleth.jpeg)
 
 ## Polgyons come in shapefiles
 Most boundaries (state, national, etc) are provided in terms of polygons. Major mapping software ArcGIS, from ESRI, has essentially set the standard formats. 
+
+Look in the [GitHub repo](https://github.com/AmeliaMN/SummerDataViz/tree/master/Geo/cb_2015_us_state_500k) to see some examples of how this looks. There are many files with different extensions: .prj (the projection), .shp (the shapefile), .cpg (??), .dbf (??), .shx (??). 
+
+You need special software or packages to work with shapefiles. 
 
 ## State shapefiles
 I got these from [the Census](https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html). You can choose the resolution. 
@@ -143,6 +168,22 @@ leaflet(data=states) %>%
   addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~states@data$color)
 ```
 
+## ggmap
+
+Another way to do mapmaking in R is with the `ggmap` package. Let's try that together!
+
+[shapefiles with ggplot2](https://github.com/hadley/ggplot2/wiki/plotting-polygon-shapefiles)
+
+```{r}
+library(ggmap)
+```
+
+## Working example (?)
+
+I have a bunch of spatial stuff in this [GitHub repo](https://github.com/AmeliaMN/MapExplorations), so we can check some of that out. 
+
+## Some issues with polygon maps
+
 ## Modifiable areal unit problem
 
 ![](img/MAUPZone1.jpeg)
@@ -155,5 +196,9 @@ leaflet(data=states) %>%
 
 [The best explanation of gerrymandering you will ever see](https://www.washingtonpost.com/news/wonk/wp/2015/03/01/this-is-the-best-explanation-of-gerrymandering-you-will-ever-see/)
 
+## Spatial aggregation 
 
+My colleague Aran Lunzer and I [made a demo](http://tinlizzie.org/~aran/spatialAggregation.html) of how spatial aggregation can impact the visual pattern you see. Let's go check it out! 
+
+![](img/tool.jpeg)
 
