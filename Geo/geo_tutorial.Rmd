@@ -75,13 +75,26 @@ lightning <- stormlocs %>%
 Now, we can programmatically map them. 
 ```{r}
 m <- leaflet(data=lightning) %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addProviderTiles("Stamen.Toner") %>%
+  #addTiles() %>%  # Add default OpenStreetMap map tiles
   addMarkers(~LONGITUDE, ~LATITUDE)
 m
 ```
 
 ## Find another storm type to map
 Bonus-- add popups!
+
+## One approach
+
+```{r}
+mtw <- stormlocs %>%
+  filter(EVENT_TYPE=="Marine Thunderstorm Wind")
+
+m <- leaflet(data=mtw) %>%
+  addProviderTiles("Stamen.Toner") %>%
+  addMarkers(~LONGITUDE, ~LATITUDE, popup=~EVENT_NARRATIVE)
+m
+```
 
 ## Plotting lots of points
 
@@ -108,7 +121,7 @@ tornados <- stormlocs %>%
 ```{r}
 m <- leaflet(data=tornados) %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  addCircles(~LONGITUDE, ~LATITUDE, weight = 1, radius = ~DAMAGE_PROPERTY, popup = ~EVENT_NARRATIVE)
+  addCircles(~LONGITUDE, ~LATITUDE, weight = 1, radius = ~DAMAGE_PROPERTY*100, popup = ~EVENT_NARRATIVE)
 m
 ```
 
@@ -134,6 +147,8 @@ You need special software or packages to work with shapefiles.
 
 ## State shapefiles
 I got these from [the Census](https://www.census.gov/geo/maps-data/data/cbf/cbf_state.html). You can choose the resolution. 
+
+If you want, the zipfile of the shapes I used is [here](https://github.com/AmeliaMN/SummerDataViz/blob/master/Geo/cb_2015_us_state_500k.zip). 
 
 ```{r}
 library(rgdal)
