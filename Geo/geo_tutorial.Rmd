@@ -75,10 +75,16 @@ lightning <- stormlocs %>%
 Now, we can programmatically map them. 
 ```{r}
 m <- leaflet(data=lightning) %>%
-  addProviderTiles("Stamen.Toner") %>%
-  #addTiles() %>%  # Add default OpenStreetMap map tiles
   addMarkers(~LONGITUDE, ~LATITUDE)
-m
+
+# OpenStreetMap
+m %>%
+  addTiles()
+  
+# Stamen
+m %>% 
+  addProviderTiles("Stamen.Toner") 
+
 ```
 
 ## Find another storm type to map
@@ -91,8 +97,9 @@ mtw <- stormlocs %>%
   filter(EVENT_TYPE=="Marine Thunderstorm Wind")
 
 m <- leaflet(data=mtw) %>%
-  addProviderTiles("Stamen.Toner") %>%
+  addProviderTiles("Stamen.Toner") %>% 
   addMarkers(~LONGITUDE, ~LATITUDE, popup=~EVENT_NARRATIVE)
+
 m
 ```
 
@@ -150,18 +157,33 @@ I got these from [the Census](https://www.census.gov/geo/maps-data/data/cbf/cbf_
 
 If you want, the zipfile of the shapes I used is [here](https://github.com/AmeliaMN/SummerDataViz/blob/master/Geo/cb_2015_us_state_500k.zip). 
 
+We're going to use the `rgdal` package to deal with shapefiles
+
 ```{r}
 library(rgdal)
+
+# In the Console, I need to do a different path
+
 states <- readOGR("cb_2015_us_state_500k", layer = "cb_2015_us_state_500k", verbose = FALSE)
 ```
 
+In RStudio, you can click on the `states` object to see what a Large SpatialPolygonsDataFrame looks like. `@data` and `@polygons`. 
 
-## Need to count up some data
+## Boring, internal data from shapefile
+
+```{r}
+leaflet(data=states) %>%
+  addTiles() %>%
+  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color =~colorQuantile("YlOrRd", states$AWATER)(AWATER)
+  )
+```
+
+
+## Something more interesting -- need to count up some data
 ```{r}
 tornadocount <- tornados %>%
   group_by(STATE) %>%
   summarize(n=n())
-
 ```
 
 
@@ -181,31 +203,17 @@ levels(tornadocount$color) <- colors
 
 ## Joining data
 ```{r}
+states@data$NAME <- toupper(states@data$NAME)
 states@data <- left_join(states@data, tornadocount, by=c("NAME"="STATE"))
 ```
 
 
-## Putting it all together (?)
+## Putting it all together
 ```{r}
-# Not currently working
 leaflet(data=states) %>%
   addTiles() %>%
-  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~states@data$color)
+  addPolygons(stroke = FALSE, fillOpacity = 0.5, smoothFactor = 0.5, color = ~states@data$color.y)
 ```
-
-## ggmap
-
-Another way to do mapmaking in R is with the `ggmap` package. Let's try that together!
-
-[shapefiles with ggplot2](https://github.com/hadley/ggplot2/wiki/plotting-polygon-shapefiles)
-
-```{r}
-library(ggmap)
-```
-
-## Working example (?)
-
-I have a bunch of spatial stuff in this [GitHub repo](https://github.com/AmeliaMN/MapExplorations), so we can check some of that out. 
 
 ## Some issues with polygon maps
 
