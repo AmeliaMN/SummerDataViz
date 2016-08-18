@@ -6,3 +6,5 @@ sp
 rgdal
 ggplot2
 ggmap
+bitops
+RCurl

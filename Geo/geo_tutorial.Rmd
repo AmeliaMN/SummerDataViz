@@ -41,7 +41,8 @@ library(leaflet)
 
 ```{r}
 m <- leaflet() %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
+  setView(-93.2650, 44.9778, zoom = 4) %>%
+  addProviderTiles("Stamen.Toner") %>%  # Add default OpenStreetMap map tiles
   addMarkers(lng=-93.2650, lat=44.9778, popup="Minneapolis!")
 m
 ```
@@ -53,8 +54,17 @@ Lets look at [storm data](http://www.ncdc.noaa.gov/stormevents/ftp.jsp) from the
 ```{r}
 library(readr)
 library(dplyr)
-stormlocs <- read_csv("StormEvents_locations-ftp_v1.0_d2016_c20160810.csv")
-stormdetails <- read_csv("StormEvents_details-ftp_v1.0_d2016_c20160810.csv")
+
+library(RCurl)
+
+stormlocs <- getURL("https://raw.githubusercontent.com/AmeliaMN/SummerDataViz/master/Geo/StormEvents_locations-ftp_v1.0_d2016_c20160810.csv")
+stormlocs <- read_csv(stormlocs)
+stormdetails <- getURL("https://raw.githubusercontent.com/AmeliaMN/SummerDataViz/master/Geo/StormEvents_details-ftp_v1.0_d2016_c20160810.csv")
+stormdetails <- read_csv(stormdetails)
+
+
+#stormlocs <- read_csv("StormEvents_locations-ftp_v1.0_d2016_c20160810.csv")
+#stormdetails <- read_csv("StormEvents_details-ftp_v1.0_d2016_c20160810.csv")
 stormlocs <- stormlocs %>%
   left_join(stormdetails, by="EVENT_ID")
 lightning <- stormlocs %>%
