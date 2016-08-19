@@ -29,9 +29,12 @@ I am a little out of the cultural loop, so I don't have a lot of contextual know
 
 ```{r}
 library(readr)
-storm <- read_csv("5-Networks/stormofswords.csv")
+storm <- read_csv("stormofswords.csv")
 head(storm)
 ```
+
+The [data](http://www.macalester.edu/~abeverid/data/stormofswords.csv) is available on the same page as the analysis. 
+
 
 ## Working with networks
 
@@ -61,7 +64,7 @@ Defaults are pretty ugly.
 ## Making igraph a bit more readable
 
 ```{r}
-plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7)
+plot(g, edge.arrow.size=0.1, vertex.size=7, vertex.label.cex=0.7)
 ```
 
 ## Changing the layout-- circle
@@ -82,12 +85,15 @@ l <- layout_with_fr(g,niter=500)
 plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7, layout=l)
 ```
 
-It can be good to save your layout separately so you don't get a subtle variation every time you plot. 
+The Fruchterman-Reingold layout algorithm used to have more parameters in `igraph`, but doesn't seem to allow you to add a repulsion parameter anymore. 
 
-## Curved edges
+(Aside: It can be good to save your layout separately so you don't get a subtle variation every time you plot.)
+
+## Trying to get closer to the Gephi image -- curved edges
 ```{r}
+# Weirdly, you can't pass a variable name as a parameter to the igraph plot method.
 E(g)$width <- E(g)$Weight/6
-plot(g, edge.arrow.size=0, vertex.label.cex=0.7, vertex.color="grey", layout=l, edge.curved=TRUE, vertex.label.color="black")
+plot(g, edge.arrow.size=0.1, vertex.size = 10, vertex.label.cex=0.7, vertex.color="grey", layout=l, edge.curved=TRUE, vertex.label.color="black")
 ```
 
 ## What about GGally? 
@@ -96,9 +102,9 @@ Lots of dependencies necessary.
 
 ```{r}
 library(GGally)
-library(network)
+library(network) # Uses the network package
 library(sna)
-library(intergraph)
+library(intergraph) # But, we can translate from igraph to network with intergraph
 ggnet2(g, label=TRUE)
 ```
 
@@ -107,12 +113,13 @@ But, defaults are prettier.
 ## Weighted edges
 
 ```{r}
+# ggnet2 allows you to pass variable names!
 ggnet2(g, label=TRUE, edge.size = "Weight", edge.alpha=0.5)
 ```
 
 AAAAA
 
-## Okay, lets do some rescaling
+## Okay, lets do some rescaling and see how nice we can get it
 
 ```{r}
 library(dplyr)
@@ -124,10 +131,9 @@ ggnet2(g, label=TRUE, edge.size = "ScaledWeight", node.size = 4, mode = "fruchte
 
 
 
-Now I think we've gone too far! You will have to figure out what makes sense. 
-
 ## ggraph
 
+This package was not installing on some systems, so it's totally optional. 
 ```{r}
 # We're going off the rails a bit here
 # library(devtools)
@@ -169,11 +175,14 @@ ec %>%
 Looks like what Andrew Beveridge and Jie Shan got!
 
 
-## Sizing nodes
+## Sizing nodes by a measure
 ```{r}
 V(g)$size <- ec$ec*10
-plot(g, edge.arrow.size=0, vertex.label.cex=0.7, vertex.color="grey", layout=l, edge.curved=TRUE, vertex.label.color="black")
+plot(g, edge.arrow.size=0, vertex.label.cex=0.7, vertex.color="grey", 
+     layout=l, edge.curved=TRUE, vertex.label.color="black")
 ```
+
+
 
 ## Betweenness centrality 
 
@@ -197,6 +206,14 @@ head(as.matrix(sort(pageRank,decreasing = TRUE)))
 ```
 Again, not the same as the paper. 
 
+## Coloring by community
+
+```{r}
+wc <- cluster_walktrap(g)
+V(g)$color <- membership(wc)
+plot(g, edge.arrow.size=0, vertex.label.cex=0.7, 
+     layout=l, edge.curved=TRUE, vertex.label.color="black")
+```
 
 ## Adjacency matrix
 
@@ -230,7 +247,11 @@ storm_ordered <- storm %>%
   left_join(ec, by = c("Source" = "names")) %>%
   left_join(ec, by = c("Target" = "names"))
 
+storm_ordered <- storm_ordered %>%
+  mutate(Source = fct_reorder(Source, ec.x),
+         Target = fct_reorder(Target, ec.y))
 
+# swap the data in the plot
 p %+% storm_ordered
 ```
 
@@ -259,6 +280,7 @@ p %+% storm_ordered2
 
 
 ## In R
+
 ```{r}
 # install.packages("bertin",repos="http://r-forge.r-project.org")
 library(bertin)
