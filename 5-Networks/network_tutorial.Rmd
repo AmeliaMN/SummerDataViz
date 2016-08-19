@@ -17,7 +17,11 @@ In the 1930s, Jacob Moreno was thinking about the "social atom" and making "soci
 
 (Image via [Mark Hansen](http://www.stat.ucla.edu/~cocteau/))
 
-## More examples
+## More examples?
+
+[Identifying slumlords with SNA](http://www.orgnet.com/slumlords.html)
+
+![](slumlords.png)
 
 ## Game of Thrones data
 
@@ -25,7 +29,7 @@ I am a little out of the cultural loop, so I don't have a lot of contextual know
 
 ```{r}
 library(readr)
-storm <- read_csv("stormofswords.csv")
+storm <- read_csv("5-Networks/stormofswords.csv")
 head(storm)
 ```
 
@@ -57,32 +61,33 @@ Defaults are pretty ugly.
 ## Making igraph a bit more readable
 
 ```{r}
-plot(g, edge.arrow.size=0.2, vertex.size=7, vertex.label.cex=0.7)
+plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7)
 ```
 
 ## Changing the layout-- circle
 
 ```{r}
-plot(g, edge.arrow.size=0.2, vertex.size=7, vertex.label.cex=0.7, layout=layout_in_circle)
+plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7, layout=layout_in_circle)
 ```
 
 ## Changing the layout -- sphere
 ```{r}
-plot(g, edge.arrow.size=0.2, vertex.size=7, vertex.label.cex=0.7, layout=layout_on_sphere)
+plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7, layout=layout_on_sphere)
 ```
 
 ## But really, we want the "random" network to be less collapsed
 
 ```{r}
 l <- layout_with_fr(g,niter=500)
-plot(g, edge.arrow.size=0.2, vertex.size=7, vertex.label.cex=0.7, layout=l)
+plot(g, edge.arrow.size=0, vertex.size=7, vertex.label.cex=0.7, layout=l)
 ```
 
 It can be good to save your layout separately so you don't get a subtle variation every time you plot. 
 
 ## Curved edges
 ```{r}
-plot(g, edge.arrow.size=0.2, vertex.size=7, vertex.label.cex=0.7, layout=l, edge.curved=TRUE)
+E(g)$width <- E(g)$Weight/6
+plot(g, edge.arrow.size=0, vertex.label.cex=0.7, vertex.color="grey", layout=l, edge.curved=TRUE, vertex.label.color="black")
 ```
 
 ## What about GGally? 
@@ -114,7 +119,7 @@ library(dplyr)
 storm <- storm %>%
   mutate(ScaledWeight = Weight / max(Weight))
 g <- graph.data.frame(storm)
-ggnet2(g, label=TRUE, edge.size = "ScaledWeight", node.size = 4)
+ggnet2(g, label=TRUE, edge.size = "ScaledWeight", node.size = 4, mode = "fruchtermanreingold", layout.par = list(cell.jitter = 0.75, repulse.rad=0.7), label.size = 3, edge.color="black", edge.alpha=0.7)
 ```
 
 
@@ -141,7 +146,7 @@ ggraph(g, 'igraph',algorithm = 'kk') +
 ```{r}
 library(networkD3)
 gd <- get.data.frame(g)
-simpleNetwork(gd)
+simpleNetwork(storm)
 ```
 
 ## There is more to networks than just node-edge diagrams
@@ -151,6 +156,7 @@ Lots of "centralities"
 ## Eigenvector Centrality
 
 ```{r}
+library(ggplot2)
 ec <- eigen_centrality(g)$vector
 ec <- data.frame(ec)
 ec$names <- rownames(ec)
@@ -160,8 +166,14 @@ ec %>%
   ggplot() + geom_bar(aes(x=reorder(names, ec), y=ec), stat="identity")
 ```
 
-Looks like what Andre Beveridge and Jie Shan got!
+Looks like what Andrew Beveridge and Jie Shan got!
 
+
+## Sizing nodes
+```{r}
+V(g)$size <- ec$ec*10
+plot(g, edge.arrow.size=0, vertex.label.cex=0.7, vertex.color="grey", layout=l, edge.curved=TRUE, vertex.label.color="black")
+```
 
 ## Betweenness centrality 
 
@@ -179,6 +191,7 @@ Not quite what they got in the paper. Hmm.
 ## Page rank
 
 ```{r}
+pageRank <- page_rank(g)$vector
 pageRank <- page_rank(g, damping = 0.15)$vector
 head(as.matrix(sort(pageRank,decreasing = TRUE)))
 ```
@@ -214,16 +227,27 @@ library(forcats)
 
 ```{r}
 storm_ordered <- storm %>%
-  left_join(ec, by = c("Source" = "names"))
-storm_ordered <- storm_ordered %>%
-  mutate(Source = fct_reorder(Source, ec),
-         Target = fct_reorder(Target, ec))
+  left_join(ec, by = c("Source" = "names")) %>%
+  left_join(ec, by = c("Target" = "names"))
 
-# swap the data in the plot
+
 p %+% storm_ordered
 ```
 
 ## Change ordering to by betweenness centrality?
+
+```{r}
+storm_ordered2 <- storm %>%
+  left_join(bc, by = c("Source" = "names")) %>%
+  left_join(bc, by = c("Target" = "names"))
+
+storm_ordered2 <- storm_ordered2 %>%
+  mutate(Source = fct_reorder(Source, bc.x),
+         Target = fct_reorder(Target, bc.y))
+
+# swap the data in the plot
+p %+% storm_ordered2
+```
 
 ## Light aside -- Bertin matrices
 
